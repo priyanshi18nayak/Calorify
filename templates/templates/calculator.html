@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Calorie Calculator</h2>
+<form method="POST">
+    <label for="food_name">Food Name</label>
+    <input type="text" name="food_name" required>
+    <label for="grams">Grams</label>
+    <input type="number" name="grams" required>
+    <button type="submit">Calculate</button>
+</form>
+{% if result is not none %}
+<p>Total Calories: {{ result }} kcal</p>
+{% endif %}
+{% endblock %}

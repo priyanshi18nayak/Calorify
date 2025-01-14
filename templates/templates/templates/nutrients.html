@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Food Nutrient Information</h2>
+<table>
+    <tr>
+        <th>Food</th>
+        <th>Protein</th>
+        <th>Fibre</th>
+        <th>Fat</th>
+    </tr>
+    {% for food, nutrients in food_data.items() %}
+    <tr>
+        <td>{{ food }}</td>
+        <td>{{ nutrients['Protein'] }}</td>
+        <td>{{ nutrients['Fibre'] }}</td>
+        <td>{{ nutrients['Fat'] }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

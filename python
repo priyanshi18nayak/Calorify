@@ -1,0 +1,96 @@
+from flask import Flask, render_template, request, redirect, url_for, flash, session
+import json
+
+app = Flask(__name__)
+app.secret_key = 'secret_key'  # Used for session management
+
+# Mock database (users)
+USERS_FILE = 'users.json'
+
+# Load users
+def load_users():
+    try:
+        with open(USERS_FILE, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {}
+
+# Save users
+def save_users(users):
+    with open(USERS_FILE, 'w') as f:
+        json.dump(users, f)
+
+@app.route('/', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        users = load_users()
+        username = request.form['username']
+        password = request.form['password']
+
+        if username in users and users[username] == password:
+            session['username'] = username
+            return redirect(url_for('nutrients'))
+        else:
+            flash('Invalid username or password', 'danger')
+    return render_template('login.html')
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        users = load_users()
+        username = request.form['username']
+        password = request.form['password']
+
+        if username in users:
+            flash('Username already exists', 'danger')
+        else:
+            users[username] = password
+            save_users(users)
+            flash('Account created successfully', 'success')
+            return redirect(url_for('login'))
+    return render_template('login.html', signup=True)
+
+@app.route('/nutrients')
+def nutrients():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    # Mock data for nutrients
+    food_data = {
+        "Apple": {"Protein": "0.3g", "Fibre": "2.4g", "Fat": "0.2g"},
+        "Egg": {"Protein": "6g", "Fibre": "0g", "Fat": "5g"},
+        "Chicken Breast": {"Protein": "31g", "Fibre": "0g", "Fat": "3.6g"}
+    }
+    return render_template('nutrients.html', food_data=food_data)
+
+@app.route('/calculator', methods=['GET', 'POST'])
+def calculator():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    result = None
+    if request.method == 'POST':
+        food_name = request.form['food_name']
+        grams = float(request.form['grams'])
+        # Mock calorie data per 100g
+        calorie_data = {
+            "Apple": 52,
+            "Egg": 155,
+            "Chicken Breast": 165
+        }
+
+        if food_name in calorie_data:
+            calories_per_100g = calorie_data[food_name]
+            result = (calories_per_100g / 100) * grams
+        else:
+            flash('Food not found in database', 'danger')
+
+    return render_template('calculator.html', result=result)
+
+@app.route('/logout')
+def logout():
+    session.pop('username', None)
+    flash('Logged out successfully', 'success')
+    return redirect(url_for('login'))
+
+if __name__ == '__main__':
+    app.run(debug=True)
